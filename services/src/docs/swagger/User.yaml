@@ -81,10 +81,20 @@ paths:
           required: true
           type: string
       responses:
-        '200':
-          description: No response was specified
+        '201':
+          description: User created
+          headers:
+            location:
+              description: Endpoint where to find the user resource
+              type: string
+        '401':
+          description: Unauthorized
+        '409':
+          description: User already exists
           schema:
-            $ref: '#/definitions/Response'
+            properties:
+              errorMessage:
+                type: string
       operationId: createUser
       summary: |-
         Create a new user
