@@ -1,0 +1,149 @@
+openapi: '3.0.0'
+info:
+  version: 3.3.0
+  title: Keycloak OpenID Connect
+  description: >-
+    ---
+
+    OpenID Connect endpoints of keycloak.
+    Please refer to the [keycloak documentation](https://www.keycloak.org/docs/3.3/server_admin/topics/sso-protocols/oidc.html)
+    and the [OpenID connect specification](http://openid.net/specs/openid-connect-core-1_0.html) for more information.
+  contact:
+    name: Lukas Kullmann / Kiwigrid GmbH
+    url: 'https://github.com/kiwigrid/keycloak'
+components:
+  securitySchemes:
+    access_token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+  - url: https://localhost:8080/auth
+    description: All URLs are relative URLs and the root of the URL being the HTTP(S) protocol, hostname, and usually path prefixed with `/auth`.
+paths:
+  /realms/{realm-name}/protocol/openid-connect/userinfo:
+    get:
+      tags:
+        - oidc
+      operationId: userinfo
+      parameters:
+        - name: realm-name
+          in: path
+          description: The realm name
+          required: true
+          schema:
+            type: string
+      security:
+        - access_token: []
+      responses:
+        200:
+          description:
+            The UserInfo Claims MUST be returned as the members of a JSON object unless a signed or encrypted response was requested during Client Registration. The Claims defined in [Section 5.1](http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims) can be returned, as can additional Claims not specified there.
+
+            For privacy reasons, OpenID Providers MAY elect to not return values for some requested Claims.
+
+            If a Claim is not returned, that Claim Name SHOULD be omitted from the JSON object representing the Claims; it SHOULD NOT be present with a null or empty string value.
+
+            The sub (subject) Claim MUST always be returned in the UserInfo Response.
+
+            NOTE Due to the possibility of token substitution attacks (see [Section 16.11](http://openid.net/specs/openid-connect-core-1_0.html#TokenSubstitution)), the UserInfo Response is not guaranteed to be about the End-User identified by the sub (subject) element of the ID Token. The sub Claim in the UserInfo Response MUST be verified to exactly match the sub Claim in the ID Token; if they do not match, the UserInfo Response values MUST NOT be used.
+
+            Upon receipt of the UserInfo Request, the UserInfo Endpoint MUST return the JSON Serialization of the UserInfo Response as in [Section 13.3](http://openid.net/specs/openid-connect-core-1_0.html#JSONSerialization) in the HTTP response body unless a different format was specified during Registration [[OpenID.Registration](http://openid.net/specs/openid-connect-core-1_0.html#OpenID.Registration)]. The UserInfo Endpoint MUST return a content-type header to indicate which format is being returned. The content-type of the HTTP response MUST be `application/json` if the response body is a text JSON object; the response body SHOULD be encoded using UTF-8.
+
+            If the UserInfo Response is signed and/or encrypted, then the Claims are returned in a JWT and the content-type MUST be `application/jwt`. The response MAY be encrypted without also being signed. If both signing and encryption are requested, the response MUST be signed then encrypted, with the result being a Nested JWT, as defined in [[JWT](http://openid.net/specs/openid-connect-core-1_0.html#JWT)].
+
+            If signed, the UserInfo Response SHOULD contain the Claims iss (issuer) and aud (audience) as members. The iss value SHOULD be the OP's Issuer Identifier URL. The aud value SHOULD be or include the RP's Client ID value.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sub:
+                    type: string
+                    description: Subject - Identifier for the End-User at the Issuer.
+                  name:
+                    type: string
+                    description: End-User's full name in displayable form including all name parts, possibly including titles and suffixes, ordered according to the End-User's locale and preferences.
+                  given_name:
+                    type: string
+                    description: Given name(s) or first name(s) of the End-User. Note that in some cultures, people can have multiple given names; all can be present, with the names being separated by space characters.
+                  family_name:
+                    type: string
+                    description: Surname(s) or last name(s) of the End-User. Note that in some cultures, people can have multiple family names or no family name; all can be present, with the names being separated by space characters.
+                  middle_name:
+                    type: string
+                    description: Middle name(s) of the End-User. Note that in some cultures, people can have multiple middle names; all can be present, with the names being separated by space characters. Also note that in some cultures, middle names are not used.
+                  nickname:
+                    type: string
+                    description: Casual name of the End-User that may or may not be the same as the `given_name`. For instance, a `nickname` value of `Mike` might be returned alongside a `given_name` value of `Michael`.
+                  preferred_username:
+                    type: string
+                    description: Shorthand name by which the End-User wishes to be referred to at the RP, such as `janedoe` or `j.doe`. This value MAY be any valid JSON string including special characters such as @, /, or whitespace.
+                  profile:
+                    type: string
+                    description: URL of the End-User's profile page. The contents of this Web page SHOULD be about the End-User.
+                  picture:
+                    type: string
+                    description: URL of the End-User's profile picture. This URL MUST refer to an image file (for example, a PNG, JPEG, or GIF image file), rather than to a Web page containing an image. Note that this URL SHOULD specifically reference a profile photo of the End-User suitable for displaying when describing the End-User, rather than an arbitrary photo taken by the End-User.
+                  website:
+                    type: string
+                    description: URL of the End-User's Web page or blog. This Web page SHOULD contain information published by the End-User or an organization that the End-User is affiliated with.
+                  email:
+                    type: string
+                    description: End-User's preferred e-mail address. Its value MUST conform to the RFC 5322 [RFC5322] addr-spec syntax.
+                  email_verified:
+                    type: boolean
+                    description: True if the End-User's e-mail address has been verified; otherwise false. When this Claim Value is `true`, this means that the OP took affirmative steps to ensure that this e-mail address was controlled by the End-User at the time the verification was performed. The means by which an e-mail address is verified is context-specific, and dependent upon the trust framework or contractual agreements within which the parties are operating.
+                  gender:
+                    type: string
+                    description: End-User's gender. Values defined by this specification are `female` and `male`. Other values MAY be used when neither of the defined values are applicable.
+                  birthdate:
+                    type: string
+                    description: End-User's birthday, represented as an ISO 8601:2004 [ISO8601‑2004] `YYYY-MM-DD` format. The year MAY be `0000`, indicating that it is omitted. To represent only the year, `YYYY` format is allowed. Note that depending on the underlying platform's date related function, providing just year can result in varying month and day, so the implementers need to take this factor into account to correctly process the dates.
+                  zoneinfo:
+                    type: string
+                    description: String from zoneinfo [zoneinfo] time zone database representing the End-User's time zone. For example, `Europe/Paris` or `America/Los_Angeles`.
+                  locale:
+                    type: string
+                    description: End-User's locale, represented as a BCP47 [RFC5646] language tag. This is typically an ISO 639-1 Alpha-2 [ISO639‑1] language code in lowercase and an ISO 3166-1 Alpha-2 [ISO3166‑1] country code in uppercase, separated by a dash. For example, `en-US` or `fr-CA`. As a compatibility note, some implementations have used an underscore as the separator rather than a dash, for example, `en_US`; Relying Parties MAY choose to accept this locale syntax as well.
+                  phone_number:
+                    type: string
+                    description: End-User's preferred telephone number. E.164 [E.164] is RECOMMENDED as the format of this Claim, for example, `+1 (425) 555-1212` or `+56 (2) 687 2400`. If the phone number contains an extension, it is RECOMMENDED that the extension be represented using the RFC 3966 [RFC3966] extension syntax, for example, `+1 (604) 555-1234;ext=5678`.
+                  phone_number_verified:
+                    type: boolean
+                    description: True if the End-User's phone number has been verified; otherwise false. When this Claim Value is `true`, this means that the OP took affirmative steps to ensure that this phone number was controlled by the End-User at the time the verification was performed. The means by which a phone number is verified is context-specific, and dependent upon the trust framework or contractual agreements within which the parties are operating. When true, the phone_number Claim MUST be in E.164 format and any extensions MUST be represented in RFC 3966 format.
+                  address:
+                    type: object
+                    description: End-User's preferred postal address.
+                    properties:
+                      formatted:
+                        type: string
+                        description: Full mailing address, formatted for display or use on a mailing label. This field MAY contain multiple lines, separated by newlines. Newlines can be represented either as a carriage return/line feed pair ("\r\n") or as a single line feed character ("\n").
+                      street_address:
+                        type: string
+                        description: Full street address component, which MAY include house number, street name, Post Office Box, and multi-line extended street address information. This field MAY contain multiple lines, separated by newlines. Newlines can be represented either as a carriage return/line feed pair ("\r\n") or as a single line feed character ("\n").
+                      locality:
+                        type: string
+                        description: City or locality component.
+                      region:
+                        type: string
+                        description: State, province, prefecture, or region component.
+                      postal_code:
+                        type: string
+                        description: Zip code or postal code component.
+                      country:
+                        type: string
+                        description: CCountry name component.
+                  updated_at:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                    description: Time the End-User's information was last updated. Its value is a JSON number representing the number of seconds from 1970-01-01T0:0:0Z as measured in UTC until the date/time.
+                additionalProperties: true
+                required:
+                  - sub
+            application/jwt:
+              schema:
+                type: string
+        401:
+          description: Unauthorized
