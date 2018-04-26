@@ -1,0 +1,449 @@
+swagger: '2.0'
+info:
+  title: 'localhost:8080'
+  version: '3.4.3.Final-2'
+host: 'localhost:8080'
+basePath: /auth
+schemes:
+  - https
+securityDefinitions:
+  client_cred:
+    type: oauth2
+    flow: application
+    tokenUrl: https://{host}{basePath}/realms/{realm}/protocol/openid-connect/token
+  bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+security:
+  - client_cred: []
+  - bearer: []
+paths:
+  '/{realm}/groups':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: search
+          type: string
+        - format: int32
+          in: query
+          name: first
+          type: integer
+        - format: int32
+          in: query
+          name: max
+          type: integer
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/GroupRepresentation'
+            type: array
+      description: Only name and ids are returned.
+      operationId: getGroups
+      summary: Get group hierarchy.
+    post:
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: rep
+          required: true
+          schema:
+            $ref: '#/definitions/GroupRepresentation'
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/Response'
+      description: >-
+        This will update the group and set the parent if it exists.  Create it
+        and set the parent
+         if the group doesn't exist.
+      operationId: addTopLevelGroup
+      summary: create or add a top level realm groupSet or create child.
+  '/{realm}/groups/count':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: search
+          type: string
+        - default: false
+          in: query
+          name: top
+          type: boolean
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            type: object
+      operationId: getGroupCount
+      summary: Returns the groups counts.
+  '/{realm}/groups/{id}':
+    delete:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+      operationId: deleteGroup
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/GroupRepresentation'
+      operationId: getGroup
+    put:
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: rep
+          required: true
+          schema:
+            $ref: '#/definitions/GroupRepresentation'
+        - in: path
+          name: id
+          required: true
+          type: string
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+      operationId: updateGroup
+      summary: 'Update group, ignores subgroups.'
+  '/{realm}/groups/{id}/children':
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: rep
+          required: true
+          schema:
+            $ref: '#/definitions/GroupRepresentation'
+        - in: path
+          name: id
+          required: true
+          type: string
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/Response'
+      description: >-
+        This will just set the parent if it exists.  Create it and set the
+        parent
+         if the group doesn't exist.
+      operationId: addChild
+      summary: Set or create child.
+  '/{realm}/groups/{id}/management/permissions':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/ManagementPermissionReference'
+      operationId: getManagementPermissions
+      summary: >-
+        Return object stating whether client Authorization permissions have been
+        initialized or not and a reference
+    put:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: ref
+          required: true
+          schema:
+            $ref: '#/definitions/ManagementPermissionReference'
+        - in: path
+          name: id
+          required: true
+          type: string
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            $ref: '#/definitions/ManagementPermissionReference'
+      operationId: setManagementPermissionsEnabled
+      summary: >-
+        Return object stating whether client Authorization permissions have been
+        initialized or not and a reference
+  '/{realm}/groups/{id}/members':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: Pagination offset
+          format: int32
+          in: query
+          name: first
+          type: integer
+        - description: Maximum results size (defaults to 100)
+          format: int32
+          in: query
+          name: max
+          type: integer
+        - in: path
+          name: id
+          required: true
+          type: string
+        - description: realm name (not id!)
+          in: path
+          name: realm
+          required: true
+          type: string
+      responses:
+        '200':
+          description: No response was specified
+          schema:
+            items:
+              $ref: '#/definitions/UserRepresentation'
+            type: array
+      operationId: getMembers
+      summary: |-
+        Get users
+
+         Returns a list of users, filtered according to query parameters
+definitions:
+  Response:
+    type: string
+    example:
+      "Not specified! Might vary!"
+  CredentialRepresentation:
+    properties:
+      algorithm:
+        type: string
+      config:
+        $ref: '#/definitions/MultivaluedHashMap'
+      counter:
+        format: int32
+        type: integer
+      createdDate:
+        format: int64
+        type: integer
+      device:
+        type: string
+      digits:
+        format: int32
+        type: integer
+      hashIterations:
+        format: int32
+        type: integer
+      hashedSaltedValue:
+        type: string
+      period:
+        format: int32
+        type: integer
+      salt:
+        type: string
+      temporary:
+        type: boolean
+      type:
+        type: string
+      value:
+        type: string
+  FederatedIdentityRepresentation:
+    properties:
+      identityProvider:
+        type: string
+      userId:
+        type: string
+      userName:
+        type: string
+  GroupRepresentation:
+    properties:
+      access:
+        type: object
+      attributes:
+        type: object
+      clientRoles:
+        type: object
+      id:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+      realmRoles:
+        items:
+          type: string
+        type: array
+      subGroups:
+        items:
+          $ref: '#/definitions/GroupRepresentation'
+        type: array
+  ManagementPermissionReference:
+    properties:
+      enabled:
+        type: boolean
+      resource:
+        type: string
+      scopePermissions:
+        type: object
+  MultivaluedHashMap:
+    properties:
+      empty:
+        type: boolean
+      loadFactor:
+        format: float
+        type: number
+      threshold:
+        format: int32
+        type: integer
+  UserConsentRepresentation:
+    properties:
+      clientId:
+        type: string
+      createdDate:
+        format: int64
+        type: integer
+      grantedClientRoles:
+        type: object
+      grantedProtocolMappers:
+        type: object
+      grantedRealmRoles:
+        items:
+          type: string
+        type: array
+      lastUpdatedDate:
+        format: int64
+        type: integer
+  UserRepresentation:
+    properties:
+      access:
+        type: object
+      attributes:
+        type: object
+      clientConsents:
+        items:
+          $ref: '#/definitions/UserConsentRepresentation'
+        type: array
+      clientRoles:
+        type: object
+      createdTimestamp:
+        format: int64
+        type: integer
+      credentials:
+        items:
+          $ref: '#/definitions/CredentialRepresentation'
+        type: array
+      disableableCredentialTypes:
+        items:
+          type: string
+        type: array
+        uniqueItems: true
+      email:
+        type: string
+      emailVerified:
+        type: boolean
+      enabled:
+        type: boolean
+      federatedIdentities:
+        items:
+          $ref: '#/definitions/FederatedIdentityRepresentation'
+        type: array
+      federationLink:
+        type: string
+      firstName:
+        type: string
+      groups:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      lastName:
+        type: string
+      notBefore:
+        format: int32
+        type: integer
+      origin:
+        type: string
+      realmRoles:
+        items:
+          type: string
+        type: array
+      requiredActions:
+        items:
+          type: string
+        type: array
+      self:
+        type: string
+      serviceAccountClientId:
+        type: string
+      username:
+        type: string
+
